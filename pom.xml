@@ -16,6 +16,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>1.8</java.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
 
@@ -23,7 +25,7 @@
     <repositories>
         <repository>
             <id>spring-release</id>
-            <name>Spring Releases</name>
+            <name>Spring Release</name>
             <url>http://repo.spring.io/release</url>
             <snapshots>
                 <enabled>false</enabled>
