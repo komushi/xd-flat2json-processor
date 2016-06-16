@@ -13,24 +13,23 @@ Simulator is a program to read from .csv file and then post to HTTP.
 
 # Run ReadSampleFile with TaxiTransactionConverter #
 
-Step 1. Copy library ./lib/openmap-5.1.13-1.jar to $XD_HOME/lib
+## Step 1. Copy library ./lib/openmap-5.1.13-1.jar to $XD_HOME/lib
 
 
-Step 2. And register the module in xd-shell:
+## Step 2. And register the module in xd-shell:
 
 ```
 module upload --file ./target/FlatToJsonConverter-0.1.0.jar --name flat2json --type processor
 ```
 
 
-Step 3. Create and deploy a stream to test in xd-shell:
+## Step 3. Create and deploy a stream to test in xd-shell:
 
 ```
 stream create test --definition "http --port=9090 | flat2json --inputType=text/plain --outputType=application/json |log" --deploy
 ```
 
-
-Step 4. And run the program using in xd-shell:
+## Step 4. And run the program using in xd-shell:
 
 C161.160_C180.155
 -----------------
@@ -45,8 +44,32 @@ http post --target http://localhost:9090  --contentType "application/text" --dat
 ```
 
 
-Step 5. Then you will be able to see output log:
+## Step 5. Then you will be able to see output log:
 
 ```
-2015-05-13 17:28:21,464 1.1.2.RELEASE  INFO pool-13-thread-4 sink.RegionRawLog - {"id":"0fbc7ea1-dd47-f712-b6be-42cf2998cf98","timestamp":1431505701463,"pickupLatitude":40.760326,"pickupLongitude":-73.967758,"dropoffLatitude":40.779728,"dropoffLongitude":-73.955383,"route":"C161.160_C163.155","newid":{"id":"d8c242f6-099a-6802-b925-a34ef2d7a2cd","timestamp":1431505701463,"route":"C161.160_C163.155"}}
+2016-06-16T23:30:41+0900 1.3.1.RELEASE INFO pool-35-thread-4 sink.test - {"uuid":"7a49cba6-d3fc-47a4-8e1a-c2503b8144e8","route":"C161.137_C163.155","timestamp":1466087441276,"pickupLatitude":40.860326,"pickupLongitude":-73.967758,"dropoffLatitude":40.779728,"dropoffLongitude":-73.955383,"pickupDatetime":"2013-01-01 00:00:00","dropoffDatetime":"2013-01-01 00:04:00"}
+```
+
+## Step 6. Set up a gemfire sink stream
+
+```
+stream create RegionRaw --definition "http --port=9090 | flat2json --inputType=text/plain --outputType=application/json |gemfire-json-server --regionName=RegionRaw --host=localhost --port=10334 --useLocator=true --keyExpression=payload.getField('uuid')" --deploy
+```
+
+## Step 7. Check the region data in gfsh
+
+```
+gfsh>query --query="select * from /RegionRaw"
+
+
+Result     : true
+startCount : 0
+endCount   : 20
+Rows       : 1
+
+                uuid                 |       route       |   timestamp   | pickupLatitude | pickupLongitude | dropoffLatitude | dropoffLongitude |   pickupDatetime    | dropoffDatetime
+------------------------------------ | ----------------- | ------------- | -------------- | --------------- | --------------- | ---------------- | ------------------- | -------------------
+48f553e2-cd5d-4617-897d-af7eddc2e282 | C161.137_C163.155 | 1466087730167 | 40.860326      | -73.967758      | 40.779728       | -73.955383       | 2013-01-01 00:00:00 | 2013-01-01 00:04:00
+
+NEXT_STEP_NAME : END
 ```

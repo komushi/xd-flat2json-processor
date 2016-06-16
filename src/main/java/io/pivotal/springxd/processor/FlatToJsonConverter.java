@@ -5,6 +5,9 @@ import com.bbn.openmap.proj.coords.LatLonPoint;
 import org.springframework.xd.tuple.Tuple;
 import org.springframework.xd.tuple.TupleBuilder;
 
+import java.util.Calendar;
+import java.util.UUID;
+
 /**
  * Created by lei_xu on 6/7/16.
  */
@@ -16,10 +19,16 @@ import org.springframework.xd.tuple.TupleBuilder;
 public class FlatToJsonConverter {
     private static final double ORIGIN_CENTER_LATITUDE = 41.474937;
     private static final double ORIGIN_CENTER_LONGITUDE = -74.913585;
+    // The cells for this query are squares of 500 m X 500 m
     private static final double EDGE = 500;
+    // . The overall grid expands 150km south and 150km east from cell 1.1 with the cell 300.300 being the last cell in the grid.
+    private static final Integer GRIDS = 300;
+
     private static final double ORIGIN_POINT_LATITUDE = 41.479428420783364;
     private static final double ORIGIN_POINT_LONGITUDE = -74.91958021476788;
     private static final LatLonPoint.Double originPoint = new LatLonPoint.Double(ORIGIN_POINT_LATITUDE, ORIGIN_POINT_LONGITUDE);
+
+
     private static final String delims = "[,]";
 
 
@@ -55,18 +64,21 @@ public class FlatToJsonConverter {
 
         if (route != null)
         {
-            Tuple subTuple = TupleBuilder.tuple()
-                    .put("route", route)
-                    .build();
+//            Tuple subTuple = TupleBuilder.tuple()
+//                    .put("route", route)
+//                    .build();
 
-            tuple = TupleBuilder.tuple().put("pickupLatitude", pickupLatitude)
+            tuple = TupleBuilder.tuple()
+                    .put("uuid", UUID.randomUUID())
+                    .put("route", route)
+                    .put("timestamp", Calendar.getInstance().getTimeInMillis())
+                    .put("pickupLatitude", pickupLatitude)
                     .put("pickupLongitude", pickupLongitude)
                     .put("dropoffLatitude", dropoffLatitude)
                     .put("dropoffLongitude", dropoffLongitude)
                     .put("pickupDatetime", pickupDatetime)
                     .put("dropoffDatetime", dropoffDatetime)
-                    .put("route", route)
-                    .put("newid", subTuple)
+//                    .put("newid", subTuple)
                     .build();
 
             System.out.println("tuple hash:" + tuple.hashCode());
@@ -92,7 +104,7 @@ public class FlatToJsonConverter {
         java.lang.Double yDouble = Math.ceil(Math.abs(yOffset) / EDGE);
         Integer yInt = yDouble.intValue();
 
-        if (xInt < 0 || xInt > 300 || yInt < 0 || yInt > 300)
+        if (xInt < 0 || xInt > GRIDS || yInt < 0 || yInt > GRIDS)
         {
             Exception e = new Exception("coordinates out of boundry! xInt:" + xInt + " yInt" + yInt);
             throw e;
